@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instagram Reels Clone</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+	
+	<!-- Google Font CDN -->
+	<link href="https://fonts.cdnfonts.com/css/google-sans" rel="stylesheet">
+
+    <style>
+        body {
+            background-color: #ffffff;
+            overflow: hidden;
+        }
+		
+		myfont{
+		font-family: 'Product Sans', sans-serif;
+		}
+		
+        .btn {
+            height: 50px;
+            width: 50px;
+        }
+
+        .bi {
+            font-size: 22px;
+        }
+
+        .instag {
+            background: transparent;
+            border: 0;
+            color: white;
+        }
+
+        .instag:hover {
+            background: rgb(217 217 217 / 40%);
+            color: white;
+        }
+		
+
+        .reel-container {
+            height: 100vh; /* Full viewport height */
+            overflow-y: auto; /* Allow vertical scrolling */           
+            scroll-snap-type: y mandatory; /* Enable scroll snapping */
+        }
+
+        .reel {
+            height: 100vh; /* Each reel takes the full height of the viewport */
+            scroll-snap-align: center; /* Snap to the center of each reel */
+        }
+
+        video::-webkit-media-controls {
+            display: none;
+        }
+		
+	.ellipsis {
+		display: -webkit-box;
+		-webkit-line-clamp: 2; 
+		-webkit-box-orient: vertical;
+		text-overflow: ellipsis; 
+		overflow: hidden;
+		cursor: default;
+		max-height: 3.2em; /* Height for 2 lines of text */
+		transition: max-height 0.9s ease-in; /* Adjust timing as necessary */
+	}
+
+	.ellipsis:hover {
+		max-height: 1000px; /* Large enough to display full text */
+		-webkit-line-clamp: unset; /* Remove the clamping on hover */
+	}
+		
+    </style>
+</head>
+<body class="bg-light">
+    <div id="app">
+        <!-- Main Content -->
+        <p class="display-2 text-center">Instagram Reels</p>
+	
+        <div id="content" class="reel-container">
+            <!-- Instagram Shorts video container -->
+            <div class="container-fluid" style="max-width:500px;" >
+                <!-- Shorts video section -->
+                <div v-for="(video, index) in videos" :key="index" class="reel">
+				
+                    <!-- Image/Video section -->
+                    <div class="video-wrapper position-relative" >
+                        <video 
+                            class="img-fluid rounded-2 w-100" 
+                            style="height: 800px; object-fit: cover;" 
+                            controls 
+                            ref="videos" 
+                            :data-index="index"
+                            @loadeddata="setupObserver"
+							@click="toggleVideoPlayback"
+							loop
+                        >
+                            <source :src="`videos/${video.video_link}`" type="video/mp4" autoplay="autoplay" />
+                        </video>
+                        <!-- Overlay Buttons (aligned to the bottom-right of the video) -->
+                        <div class="position-absolute d-flex flex-column align-items-center gap-2 z-3" style="bottom: 20px; right: 10px;">
+                            <button class="btn btn-light rounded-circle instag" aria-label="like">
+                                <i class="bi bi-hand-thumbs-up"></i>
+                            </button>
+                            <button class="btn btn-light rounded-circle instag" aria-label="dislike" 
+							style="-webkit-transform: scaleX(-1); transform: scaleX(-1);">
+                                <i class="bi bi-hand-thumbs-down"></i>
+                            </button>
+                            <button class="btn btn-light rounded-circle instag" aria-label="comment">
+                                <i class="bi bi-chat"></i>
+                            </button>
+                            <button class="btn btn-light rounded-circle instag" aria-label="share">
+                                <i class="bi bi-share"></i>
+                            </button>
+                            <button class="btn btn-light rounded-circle instag" aria-label="save">
+                                <i class="bi bi-bookmark"></i>
+                            </button>
+                            <button class="btn btn-light rounded-2 p-0 mt-2 instag">
+                                <img :src="`https://picsum.photos/60/60?random=${index + 1}`" 
+                                    class="img-fluid rounded-3 border border-light-subtle" style="width: 35px; height: 35px; object-fit: cover;" />
+                            </button>
+                        </div>
+                        <!-- Video Title and Channel Name (at the bottom) -->
+                        <div class="position-absolute w-100 text-light p-3 rounded-2" 
+						style="bottom: 0; left: 0; background: rgba(0, 0, 0, 0.1); margin-bottom: 6px;">
+                            <div class="d-flex align-items-center">
+                                <img :src="`https://i.pravatar.cc/50?random=${index + 1}`"  
+								class="img-fluid rounded-circle" style="width: 30px; height: 30px; object-fit: cover; margin-right: 10px;" />
+                                <p class="mb-0 me-3 fw-bold myfont">{{ video.channel_name }}</p>
+                                <span class="badge text-bg-light p-2 shadow-sm border 
+								border-light-subtle border-1 px-3 myfont" style="cursor: pointer;">Follow</span>
+                            </div>
+							<div class="w-75 myfont">
+									<p class="mb-1 mt-3 overflow-hidden ellipsis">
+										{{ video.video_title }}
+									</p>
+								</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+				
+    <!-- Vue.js 3 from CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@3.5.10/dist/vue.global.min.js"></script>
+    <script>
+	
+        // Vue 3 application
+        const app = Vue.createApp({
+            data() {
+                return {
+                    // Array of video details
+                    videos: [
+                        { "channel_name": "Niaynder", "video_link": "v0.mp4", "video_title": "Kanna Hashimoto is a Japanese actress. During her time with the group, in 2013, a fan-taken photo of her performing went viral on Twitter and 2channel" },
+                        { "channel_name": "Alex Willson", "video_link": "v1.mp4", "video_title": "A cute girl dancing / Japanese maid cosplay." },
+                        { "channel_name": "Sachin Verma", "video_link": "v2.mp4", "video_title": "Anakin Skywalker vs Ahsoka Episode 5 what a masterpiece." },
+                        { "channel_name": "Henry Cavill", "video_link": "v3.mp4", "video_title": "Henry Cavill mentions in the interview that he doesn't know who actually wrote this" },
+                        { "channel_name": "Tina", "video_link": "v4.mp4", "video_title": "A beautiful Korean girl dances gracefully." },
+						{ "channel_name": "Genshin Impact", "video_link": "v5.mp4", "video_title": "Paimon god of protection | She is trying to shield, to help, to do anything for the Traveller. She comforts him in anyway when he is down for example in the 2 Traveller chapter Archon Quests" },
+                        { "channel_name": "Crayon Shin-chan", "video_link": "v6.mp4", "video_title": "Top 5 Most Beautiful Towns in Japan" },
+						{ "channel_name": "Rim cosplayer", "video_link": "v7.mp4", "video_title": "I see forever in your eyes, I feel okay when I see you smile, smile Wishing on dandelions all of the time Praying to God that one day you'll be mine" }
+                       
+                    ], 
+                    observer: null
+                };
+            },
+            mounted() {
+                this.setupObserver();
+            },
+            methods: {
+                setupObserver() {
+                    if (this.observer) return; // Prevent multiple observers
+                    this.observer = new IntersectionObserver(entries => {
+                        entries.forEach(entry => {
+                            const video = entry.target;
+
+                            if (entry.isIntersecting) {
+                                video.play(); // Play the video when it enters the viewport
+                            } else {
+                                video.pause(); // Pause the video when it exits the viewport
+                            }
+                        });
+                    }, {
+                        threshold: 0.5 // Trigger when 50% of the video is visible
+                    });
+
+                    // Observe each video
+                    const videos = this.$refs.videos;
+                    videos.forEach(video => {
+                        this.observer.observe(video);
+                    });
+                },
+                toggleVideoPlayback(event) {
+                    const videos = this.$refs.videos;
+                    let visibleVideo = null;
+
+                    // Check which video is currently visible
+                    videos.forEach(video => {
+                        const rect = video.getBoundingClientRect();
+                        const isVisible = rect.top >= 0 && rect.bottom <= window.innerHeight;
+
+                        if (isVisible) {
+                            visibleVideo = video; // Store the visible video
+                        }
+                    });
+
+                    // If a visible video is found, toggle its playback
+                    if (visibleVideo) {
+                        if (visibleVideo.paused) {
+                            visibleVideo.play(); // Play the visible video if it's paused
+                        } else {
+                            visibleVideo.pause(); // Pause the visible video if it's playing
+                        }
+                    }
+                }
+            }
+        });
+        // Mount the Vue instance to the #app element
+        app.mount('#app');
+    </script>
+</body>
+</html>
